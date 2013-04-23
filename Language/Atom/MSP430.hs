@@ -1,13 +1,13 @@
 module Language.Atom.MSP430 (
     module Language.Atom,
+    module Language.Atom.MSP430.RegisterState,
     module Language.Atom.MSP430.Watchdog,
-    module Language.Atom.MSP430.Types,
     compileMSP430
  ) where
 
 import Language.Atom
+import Language.Atom.MSP430.RegisterState
 import Language.Atom.MSP430.Watchdog
-import Language.Atom.MSP430.Types
 
 -- | Compile a Wiring-like program for the MSP430 with Atom functions for setup and loop.
 compileMSP430 s l = do

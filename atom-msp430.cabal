@@ -14,7 +14,7 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:     Language.Atom.MSP430,
-                       Language.Atom.MSP430.Types,
+                       Language.Atom.MSP430.RegisterState,
                        Language.Atom.MSP430.Watchdog
   build-depends:       base ==4.5.*,
                        mtl,

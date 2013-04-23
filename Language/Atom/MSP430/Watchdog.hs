@@ -4,9 +4,8 @@ module Language.Atom.MSP430.Watchdog (
  ) where
 
 import Language.Atom
-import Language.Atom.MSP430.Types
+import Language.Atom.MSP430.RegisterState
 import Data.Word
-import Control.Monad.State
 
 -- | These options control the operation of the watchdog timer. Any of these options may be set or cleared, but
 --   remember to always set the Password when issuing instructions to the watchdog timer.
@@ -36,5 +35,5 @@ wdtctl = word16' "WDTCTL"
 -- | Set options in the watchdog timer. Give it a series of 'set' and 'clear' instructions using values of the
 --   WatchdogOption type. Internally, it operates on the bits of the WDTCTL register.
 watchdog :: (RegisterState WatchdogOption Word16 ()) -> Atom ()
-watchdog s = wdtctl <== (Const $ fst $ execState s (0, wdtOptToWord16))
+watchdog s = wdtctl <== (Const $ execRegisterState s (0, wdtOptToWord16))
 
