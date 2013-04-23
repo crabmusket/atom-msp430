@@ -1,4 +1,5 @@
-# LED blink
+LED blink
+---------
 
 _This is a [literate Haskell][LHS] file, which means GHC can read it as valid Haskell code.
 Try `runhaskell ledblink.lhs` and see!_
@@ -18,7 +19,7 @@ The first thing we need to do is disable (or 'hold') the watchdog timer.
 
 > setup = do
 >     watchdog $ do
-> 			 set Password
+>         set Password
 >         set Hold
 
 And now, we'll set the `P1DIR` register to let us output values to our LED.
@@ -45,7 +46,7 @@ Then, we can define two rules, `"led_high"` and `"led_low"` that fire with our d
 >     let p1out = word16' "P1OUT"
 >     period p $ atom "led_high" $ do
 >         p1out <== 1
->     period p $ phase (quot p 4) $ atom "led_high" $ do
+>     period p $ phase (quot p 4) $ atom "led_low" $ do
 >         p1out <== 0
 
 And that's it!
@@ -55,21 +56,17 @@ Now we'll take advantage of one of `atom-msp430`'s convenience functions to comp
 
 This will automatically create four C library files, a header and code file for each function.
 Now, that's unfortunately not _all_ you need to get up and running.
-This code has generated our library files, but we still need a main file to bind them together.
+This code has generated our library files, but we still need a main function to call these functions.
 For example, I use something like this:
 
 ```c
-#include <msp430g2231.h>
-
-#include "setup.h"
-#include "loop.h"
-
 int main(void) {
 	setup();
 	while(1) loop();
 }
 ```
 
+Don't forget to include `setup.h` and `loop.h`.
 This compiles with [IAR embedded workbench][IAR], my IDE of choice for LaunchPad development.
 Once you download and run, you'll see the red LED blink slowly.
 Hurrah!
