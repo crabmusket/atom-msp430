@@ -7,6 +7,9 @@ import Language.Atom
 import Language.Atom.MSP430.RegisterState
 import Data.Word
 
+-- | A type of RegisterState where you can set and clear WatchdogOptions.
+type WatchdogRegister = RegisterState WatchdogOption Word16
+
 -- | These options control the operation of the watchdog timer. Any of these options may be set or cleared, but
 --   remember to always set the Password when issuing instructions to the watchdog timer.
 data WatchdogOption
@@ -32,7 +35,7 @@ wdtOptToWord16 o = case o of
 -- | Reference to the WDTCTL register that controls the behavior of the watchdog timer.
 wdtctl = word16' "WDTCTL"
 
-watchdog, watchdog' :: (RegisterState WatchdogOption Word16 ()) -> Atom ()
+watchdog, watchdog' :: WatchdogRegister () -> Atom ()
 -- | Set options in the watchdog timer. Give it a series of 'set' and 'clear' instructions using values of the
 --   WatchdogOption type. Internally, it operates on the bits of the WDTCTL register.
 watchdog s = wdtctl <== (Const $ execRegisterState s (0, wdtOptToWord16))
