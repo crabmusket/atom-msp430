@@ -44,7 +44,7 @@ void initTimer(void) {
 }
 ```
 
-(Example from [msp430launchpad.com][] with no malice intended.
-The site taught me everything I know about the 430!)
+(Example by oPossum via [msp430launchpad.com][] with no malice intended.
+Those guys taught me everything I know about the 430!)
 
  [msp430launchpad.com]: http://www.msp430launchpad.com/2012/06/using-printf.html
