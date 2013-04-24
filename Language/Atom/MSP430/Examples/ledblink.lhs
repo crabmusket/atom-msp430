@@ -8,7 +8,7 @@ Yes, the good old blinking LED.
 This program will target the MSP430G2231 controller on a [LaunchPad][LP]
 (which is where I get my assumptions about where LEDs are plugged in and so on).
 Let's dive right in and get our top matter and imports out of the way.
-For brevity, we'll just import everything `atom-msp430` has to offer (including all of `atom` itself).
+For brevity, we'll just import everything `atom-msp430` has to offer (including all of Atom itself).
 
 > module Main where
 > import Language.Atom.MSP430
@@ -23,7 +23,7 @@ The first thing we need to do is disable (or 'hold') the watchdog timer.
 >         set Hold
 
 And now, we'll set the `P1DIR` register to let us output values to our LED.
-**Note: this demonstrates using the `atom` API to access a register.
+**Note: this demonstrates using the Atom API to access a register.
 `atom-msp430` doesn't wrap this in MSP430-specific code yet.
 It will soon.**
 
@@ -39,7 +39,7 @@ I've just chosen an arbitrary constant _p_ for you:
 > p = 10000
 
 And now the loop function itself.
-Again, I'll use `atom`'s `word16'` function to get a reference to the `P1OUT` register of the G2231.
+Again, I'll use Atom's `word16'` function to get a reference to the `P1OUT` register of the G2231.
 Then, we can define two rules, `"led_high"` and `"led_low"` that fire with our desired period and phase.
 
 > loop = do
