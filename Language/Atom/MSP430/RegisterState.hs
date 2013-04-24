@@ -21,6 +21,10 @@ execRegisterState fn init = fst $ execState fn init
 
 -- | Update the state of a register given a set of commands.
 updateRegister :: (Assign b, IntegralE b, Bits b) => V b -> ((b, b), a -> b) -> RegisterState a b () -> Atom ()
-updateRegister reg init s = reg <== BWOr (BWAnd (value reg) (Const $ complement clears)) (Const sets)
-    where (sets, clears) = execRegisterState s init
+updateRegister reg init s = let (sets, clears) = execRegisterState s init in
+    case (sets, clears) of
+        (0, 0) -> return ()
+        (_, 0) -> reg <== BWOr (value reg) (Const sets)
+        (0, _) -> reg <== BWAnd (value reg) (Const $ complement clears)
+        otherwise -> reg <== BWOr (BWAnd (value reg) (Const $ complement clears)) (Const sets)
 
