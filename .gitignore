@@ -1,0 +1,8 @@
+# Intermediate/built files
+*.hi
+*.o
+*.h
+*.c
+
+# Haddock documentation
+dist/
