@@ -32,14 +32,14 @@ ioOptToWord8 o = case o of
     Bits xs -> sum $ map (shift 0x01) xs
 
 portDir :: Int -> IORegister () -> Atom ()
-portDir p s = portDir' p <== (Const $ execRegisterState s (0, ioOptToWord8))
+portDir p s = updateRegister (portDir' p) ((0, 0), ioOptToWord8) s
 
 -- | Gets a reference to a numbered output port's direction control register.
 portDir' :: Int -> V Word8
 portDir' p = word8' $ "P" ++ show p ++ "DIR"
 
 portOut :: Int -> IORegister () -> Atom ()
-portOut p s = portOut' p <== (Const $ execRegisterState s (0, ioOptToWord8))
+portOut p s = updateRegister (portOut' p) ((0, 0), ioOptToWord8) s
 
 -- | Gets a reference to a numbered port's output register.
 portOut' :: Int -> V Word8
