@@ -52,7 +52,7 @@ Then, we can define two rules, `"led_high"` and `"led_low"` that fire with our d
 And that's it!
 Now we'll take advantage of one of `atom-msp430`'s convenience functions to compile our setup and loop functions.
 
-> main = compileMSP430 setup loop
+> main = compileMSP430 "g2231" setup loop
 
 This will automatically create four C library files, a header and code file for each function.
 Now, that's unfortunately not _all_ you need to get up and running.
