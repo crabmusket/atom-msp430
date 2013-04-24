@@ -1,5 +1,6 @@
 module Language.Atom.MSP430.Watchdog (
     WatchdogOption (..),
+    WatchdogRegister,
     watchdog, watchdog'
  ) where
 
@@ -37,7 +38,7 @@ wdtctl = word16' "WDTCTL"
 
 watchdog, watchdog' :: WatchdogRegister () -> Atom ()
 -- | Set options in the watchdog timer. Give it a series of 'set' and 'clear' instructions using values of the
---   WatchdogOption type. Internally, it operates on the bits of the WDTCTL register.
+--   'WatchdogOption' type. Internally, it operates on the bits of the WDTCTL register.
 watchdog s = wdtctl <== (Const $ execRegisterState s (0, wdtOptToWord16))
--- | Functions identically to watchdog, but you don't have to manually set Password.
+-- | Functions identically to 'watchdog', but you don't have to manually set 'Password'.
 watchdog' s = wdtctl <== (Const $ execRegisterState s (0x5A00, wdtOptToWord16))
