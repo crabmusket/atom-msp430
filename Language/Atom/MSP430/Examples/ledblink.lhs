@@ -67,7 +67,7 @@ It will look something like this:
         return 0;
     }
 
-Compile with your choice of MSP430-compatible software (I use [IAR embedded kickstart][]).
+Compile with your choice of MSP430-compatible software (I use [IAR embedded kickstart][IAR]).
 Once you download and run, you'll see the red LED blink slowly.
 Hurrah!
 
