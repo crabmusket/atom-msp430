@@ -8,7 +8,9 @@ import System.IO
 --   roles in the compiled code.
 data MSP430Compilation = MSP430Compilation {
     setupFn :: Maybe (Atom ()),
+    setupFnName :: String,
     loopFn :: Maybe (Atom ()),
+    loopFnName :: String,
     mainFile :: String,
     headers :: [String]
  }
@@ -17,7 +19,9 @@ data MSP430Compilation = MSP430Compilation {
 --   basic main.c.
 mspProgram = MSP430Compilation {
     setupFn = Nothing,
+    setupFnName = "setup",
     loopFn = Nothing,
+    loopFnName = "loop",
     mainFile = "main.c",
     headers = []
  }
@@ -44,21 +48,37 @@ mspCompile c = do
         cRuleCoverage = False,
         cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ ".h\"") (headers c), "")
      }
-    case (setupFn c) of
+    case setupFn c of
         Nothing -> return ()
         Just f -> do
-            putStrLn "Compiling setup function..."
+            putStrLn $ "Compiling " ++ setupFnName c ++ "..."
             hFlush stdout
-            compile "setup" msp430defaults f
+            compile (setupFnName c) msp430defaults f
             return ()
-    case (loopFn c) of
+    case loopFn c of
         Nothing -> return ()
         Just f -> do
-            putStrLn "Compiling loop function..."
+            putStrLn $ "Compiling " ++ loopFnName c ++ "..."
             hFlush stdout
-            compile "loop"  msp430defaults f
+            compile (loopFnName c)  msp430defaults f
             return ()
-    putStrLn "Generating main file..."
+    putStrLn $ "Generating " ++ mainFile c ++ "..."
     hFlush stdout
+    withFile (mainFile c) WriteMode $ \h -> do
+        case setupFn c of
+            Just f -> hPutStrLn h $ "#include \"" ++ setupFnName c ++ ".h\""
+            Nothing -> return ()
+        case loopFn c of
+            Just f -> hPutStrLn h $ "#include \"" ++ loopFnName c ++ ".h\""
+            Nothing -> return ()
+        hPutStrLn h "\nint main(void) {"
+        case setupFn c of
+            Just f -> hPutStrLn h $ "    " ++ setupFnName c ++ "();"
+            Nothing -> return ()
+        case loopFn c of
+            Just f -> hPutStrLn h $ "    while(1) " ++ loopFnName c ++ "();"
+            Nothing -> return ()
+        hPutStrLn h "    return 0;"
+        hPutStrLn h "}"
     return ()
 
