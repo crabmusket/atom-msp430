@@ -18,18 +18,22 @@ type IORegister = RegisterState IOOption Word8
 --   determine which pins act as inputs and which as outputs. Pins are input (0) by default;
 --   to reset input after you've set output, simply clear (Out x).
 data IOOption
-    = Out Int    -- ^ Puts a single pin in output mode.
-    | Bit Int    -- ^ Identical to Out.
-    | Outs [Int] -- ^ Puts a list of pins in output mode.
-    | Bits [Int] -- ^ Identical to Outs.
+    = Out Int     -- ^ Puts a single pin in output mode.
+    | Bit Int     -- ^ Identical to Out.
+    | High Int    -- ^ Identical to Out.
+    | Outs [Int]  -- ^ Puts a list of pins in output mode.
+    | Bits [Int]  -- ^ Identical to Outs.
+    | Highs [Int] -- ^ Identical to Outs.
 
 -- | Convert an IOOption symbol to an actual word value.
 ioOptToWord8 :: IOOption -> Word8
 ioOptToWord8 o = case o of
-    Out x   -> shift 0x01 x
-    Bit x   -> shift 0x01 x
-    Outs xs -> sum $ map (shift 0x01) xs
-    Bits xs -> sum $ map (shift 0x01) xs
+    Out x    -> bit x
+    Bit x    -> bit x
+    High x   -> bit x
+    Outs xs  -> sum $ map (bit) xs
+    Bits xs  -> sum $ map (bit) xs
+    Highs xs -> sum $ map (bit) xs
 
 portDir :: Int -> IORegister () -> Atom ()
 portDir p s = updateRegister (portDir' p) ((0, 0), ioOptToWord8) s
