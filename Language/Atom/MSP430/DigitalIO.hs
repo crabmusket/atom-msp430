@@ -40,15 +40,19 @@ portDir p s = updateRegister (portDir' p) ((0, 0), ioOptToWord8) s
 
 -- | Gets a reference to a numbered output port's direction control register.
 portDir' :: Int -> V Word8
-portDir' p = word8' $ "P" ++ show p ++ "DIR"
+portDir' p = validatePort p $ "P" ++ show p ++ "DIR"
 
 portOut :: Int -> IORegister () -> Atom ()
 portOut p s = updateRegister (portOut' p) ((0, 0), ioOptToWord8) s
 
 -- | Gets a reference to a numbered port's output register.
 portOut' :: Int -> V Word8
-portOut' p = word8' $ "P" ++ show p ++ "OUT"
+portOut' p = validatePort p $ "P" ++ show p ++ "OUT"
 
 -- | Gets a reference to a numbered port's input register.
 portIn' :: Int -> E Word8
-portIn' p = value $ word8' $ "P" ++ show p ++ "IN"
+portIn' p = value $ validatePort p $ "P" ++ show p ++ "IN"
+
+-- | Validate a port number so we don't have people selecting the wrong ports.
+validatePort :: Int -> Name -> V Word8
+validatePort p = if p > 0 && p <= 8 then word8' else error $ "There is no port number " ++ show p
