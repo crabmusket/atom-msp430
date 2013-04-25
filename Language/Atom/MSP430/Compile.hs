@@ -13,7 +13,8 @@ data MSP430Compilation = MSP430Compilation {
     headers :: [String]
  }
 
--- | 
+-- | Default program to construct your own programs from. Contains Nothing and generates a
+--   basic main.c.
 mspProgram = MSP430Compilation {
     setupFn = Nothing,
     loopFn = Nothing,
@@ -21,12 +22,27 @@ mspProgram = MSP430Compilation {
     headers = []
  }
 
--- | Compile a Wiring-like program for the MSP430 with Atom functions for setup and loop.
+-- | Easy settings for a Wiring-style program with setup and loop functions. Expects a device extension
+--   for header files - i.e. running with "g2231" wihh generate files that #include "msp430g2231.h"
+wiringProgram h s l = mspProgram {
+    setupFn = Just s,
+    loopFn = Just l,
+    headers = ["msp430" ++ h]
+ }
+
+-- | Easy settings for a program with just a setup function.
+simpleProgram h s = mspProgram {
+    setupFn = Just s,
+    headers = ["msp430" ++ h]
+ }
+
+-- | Compile a program given by the compilation specification. Compiles all functions into library files
+--   and then generates a main file which calls these functions in the appropriate way.
 mspCompile :: MSP430Compilation -> IO ()
 mspCompile c = do
     let msp430defaults = defaults {
         cRuleCoverage = False,
-        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ "\"") (headers c), "")
+        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ ".h\"") (headers c), "")
      }
     case (setupFn c) of
         Nothing -> return ()
@@ -43,16 +59,6 @@ mspCompile c = do
             compile "loop"  msp430defaults f
             return ()
     putStrLn "Generating main file..."
+    hFlush stdout
     return ()
-
-mspWiring h s l = mspProgram {
-    setupFn = Just s,
-    loopFn = Just l,
-    headers = ["msp430" ++ h]
- }
-
-mspSimple h s = mspProgram {
-    setupFn = Just s,
-    headers = ["msp430" ++ h]
- }
 
