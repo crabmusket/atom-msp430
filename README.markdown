@@ -37,12 +37,16 @@ cabal install --user
  3. Because I'm sick of seeing code like this:
 
 ```c
-void initTimer(void) {
-   P1DIR |= BIT0; // set P1.0 (LED1) as output
-   P1OUT |= BIT0; // P1.0 low
-   CCTL0 = CCIE;  // CCR0 interrupt enabled
-   CCR0 = 4096;   // 32kHz/8/4096 -> 1 sec
-   TACTL = TASSEL_1 + ID_3 + MC_1; // ACLK, /8, upmode
+void initUART(void) {
+    P1SEL = BIT1 + BIT2;        // P1.1 = RXD, P1.2=TXD
+    P1SEL2 = BIT1 + BIT2;       // P1.1 = RXD, P1.2=TXD
+
+    UCA0CTL1 |= UCSSEL_1;       // CLK = ACLK
+    UCA0BR0 = 0x03;             // 32kHz/9600 = 3.41
+    UCA0BR1 = 0x00;
+    UCA0MCTL = UCBRS1 + UCBRS0; // Modulation UCBRSx = 3
+    UCA0CTL1 &= ~UCSWRST;       // **Initialize USCI state machine**
+    IE2 |= UCA0RXIE;            // Enable USCI_A0 RX interrupt
 }
 ```
 
