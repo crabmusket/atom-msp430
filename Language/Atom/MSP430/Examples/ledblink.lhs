@@ -50,7 +50,7 @@ Note that here we use the `Pin` constructor instead of `Out` to refer to the 0th
 And that's it!
 Now we'll take advantage of one of `atom-msp430`'s convenience functions to compile our setup and loop functions.
 
-> main = compileMSP430 "g2231" setup loop
+> main = mspCompile $ wiringProgram "g2231" setup loop
 
 This will automatically create four C library files, a header and code file for each function.
 Now, that's unfortunately not _all_ you need to get up and running.
