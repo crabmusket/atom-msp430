@@ -1,4 +1,8 @@
-module Language.Atom.MSP430.Compile where
+module Language.Atom.MSP430.Compile (
+    MSP430Compilation (..),
+    mspProgram, wiringProgram,  simpleProgram,
+    mspCompile
+ ) where
 
 import Language.Atom
 import Control.Monad
@@ -11,6 +15,10 @@ data MSP430Compilation = MSP430Compilation {
     setupFnName :: String,
     loopFn :: Maybe (Atom ()),
     loopFnName :: String,
+    timerAInterrupt :: Maybe (Atom ()),
+    timerAInterruptName :: String,
+    watchdogInterrupt :: Maybe (Atom ()),
+    watchdogInterruptName :: String,
     mainFile :: String,
     headers :: [String]
  }
@@ -22,6 +30,10 @@ mspProgram = MSP430Compilation {
     setupFnName = "setup",
     loopFn = Nothing,
     loopFnName = "loop",
+    timerAInterrupt = Nothing,
+    timerAInterruptName = "timerAISR",
+    watchdogInterrupt = Nothing,
+    watchdogInterruptName = "wdtISR",
     mainFile = "main.c",
     headers = []
  }
@@ -44,41 +56,57 @@ simpleProgram h s = mspProgram {
 --   and then generates a main file which calls these functions in the appropriate way.
 mspCompile :: MSP430Compilation -> IO ()
 mspCompile c = do
-    let msp430defaults = defaults {
+    let compile' = maybeCompile defaults {
         cRuleCoverage = False,
         cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ ".h\"") (headers c), "")
      }
-    case setupFn c of
-        Nothing -> return ()
-        Just f -> do
-            putStrLn $ "Compiling " ++ setupFnName c ++ "..."
-            hFlush stdout
-            compile (setupFnName c) msp430defaults f
-            return ()
-    case loopFn c of
-        Nothing -> return ()
-        Just f -> do
-            putStrLn $ "Compiling " ++ loopFnName c ++ "..."
-            hFlush stdout
-            compile (loopFnName c)  msp430defaults f
-            return ()
+    compile' (setupFnName c) (setupFn c)
+    compile' (loopFnName c) (loopFn c)
+    compile' (timerAInterruptName c) (timerAInterrupt c)
+    compile' (watchdogInterruptName c) (watchdogInterrupt c)
     putStrLn $ "Generating " ++ mainFile c ++ "..."
     hFlush stdout
     withFile (mainFile c) WriteMode $ \h -> do
+        let put = hPutStrLn h
+        let header' = maybeHeader h
+        header' (setupFnName c) (setupFn c)
+        header' (loopFnName c) (loopFn c)
+        header' (timerAInterruptName c) (timerAInterrupt c)
+        header' (watchdogInterruptName c) (watchdogInterrupt c)
+        put "\nint main(void) {"
         case setupFn c of
-            Just f -> hPutStrLn h $ "#include \"" ++ setupFnName c ++ ".h\""
+            Just f -> put $ "    " ++ setupFnName c ++ "();"
             Nothing -> return ()
         case loopFn c of
-            Just f -> hPutStrLn h $ "#include \"" ++ loopFnName c ++ ".h\""
+            Just f -> put $ "    while(1) " ++ loopFnName c ++ "();"
             Nothing -> return ()
-        hPutStrLn h "\nint main(void) {"
-        case setupFn c of
-            Just f -> hPutStrLn h $ "    " ++ setupFnName c ++ "();"
+        put "    return 0;"
+        put "}\n"
+        case timerAInterrupt c of
+            Just fn -> do
+                put   "#pragma vector=TIMERA0_VECTOR"
+                put   "__interrupt void __timerA_isr(void) {"
+                put $ "    " ++ timerAInterruptName c ++ "();"
+                put   "}\n"
             Nothing -> return ()
-        case loopFn c of
-            Just f -> hPutStrLn h $ "    while(1) " ++ loopFnName c ++ "();"
+        case watchdogInterrupt c of
+            Just fn -> do
+                put   "#pragma vector=WDT_VECTOR"
+                put   "__interrupt void __wdt_isr(void) {"
+                put $ "    " ++ watchdogInterruptName c ++ "();"
+                put   "}\n"
             Nothing -> return ()
-        hPutStrLn h "    return 0;"
-        hPutStrLn h "}"
     return ()
+
+maybeCompile s n f = case f of
+    Nothing -> return ()
+    Just fn -> do
+        putStrLn $ "Compiling " ++ n ++ "..."
+        hFlush stdout
+        compile n s fn
+        return ()
+
+maybeHeader h header f = case f of
+    Just _ -> hPutStrLn h $ "#include \"" ++ header ++ ".h\""
+    Nothing -> return ()
 
