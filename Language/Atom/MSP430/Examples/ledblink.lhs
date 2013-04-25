@@ -52,20 +52,20 @@ Now we'll take advantage of one of `atom-msp430`'s convenience functions to comp
 
 > main = mspCompile $ wiringProgram "g2231" setup loop
 
-This will automatically create four C library files, a header and code file for each function.
-Now, that's unfortunately not _all_ you need to get up and running.
-This code has generated our library files, but we still need a main file to call these functions.
-For example, I use something like this:
+This will automatically create four C library files (a header and code file for each function)
+and a main file (`main.c`) that executes `setup` and `loop`.
+It will look something like this:
 
     #include "setup.h"
     #include "loop.h"
     
     int main(void) {
-       setup();
-       while(1) loop();
+        setup();
+        while(1) loop();
+        return 0;
     }
 
-This compiles with [IAR embedded workbench][IAR], my IDE of choice for LaunchPad development.
+Compile with your choice of MSP430-compatible software (I use [IAR embedded kickstart][]).
 Once you download and run, you'll see the red LED blink slowly.
 Hurrah!
 
