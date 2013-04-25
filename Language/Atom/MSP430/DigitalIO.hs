@@ -3,9 +3,8 @@ module Language.Atom.MSP430.DigitalIO (
     IOValue (..),
     IORegister,
     IODirRegister,
-    portDir, portDir',
-    portOut, portOut',
-    portIn'
+    port1Out, port1Dir, port1In,
+    port2Out, port2Dir, port2In
  ) where
 
 import Language.Atom
@@ -65,3 +64,10 @@ portIn' p = value $ validatePort p $ "P" ++ show p ++ "IN"
 -- | Validate a port number so we don't have people selecting the wrong ports.
 validatePort :: Int -> Name -> V Word8
 validatePort p = if p > 0 && p <= 8 then word8' else error $ "There is no port number " ++ show p
+
+port1Out = portOut 1
+port1Dir = portDir 1
+port1In = portIn' 1
+port2Out = portOut 2
+port2Dir = portDir 2
+port2In = portIn' 2
