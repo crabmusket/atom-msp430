@@ -20,7 +20,11 @@ data WatchdogOption
     | NMI           -- ^ Enable NMI interrupt according to NMIFalling.
     | IntervalMode  -- ^ Use the WDT like a regular timer with an interrupt instead of letting it reset the uC.
     | ClearCounter  -- ^ Setting this bit resets the WDT count to 0.
-    | UseACLK       -- ^ Set this to use the ACLK instead of the SMCLK as the watchdog timer's source.
+    | UseAuxClock   -- ^ Set this to use the auxiliary/externall ACLK instead of the SMCLK as the watchdog timer source.
+    | SourceDiv15   -- ^ Divide clock input rate by 2^15 (32768).
+    | SourceDiv13   -- ^ Divide clock input rate by 2^13 (8192).
+    | SourceDiv9    -- ^ Divide clock input rate by 2^9 (512).
+    | SourceDiv6    -- ^ Divide clock input rate by 2^6 (64).
 
 -- | Convert a WatchdogOption symbol to an actual word value.
 wdtOptToWord16 :: WatchdogOption -> Word16
@@ -31,7 +35,11 @@ wdtOptToWord16 o = case o of
     NMI           -> 0x0020
     IntervalMode  -> 0x0010
     ClearCounter  -> 0x0008
-    UseACLK       -> 0x0004
+    UseAuxClock   -> 0x0004
+    SourceDiv15   -> 0x0000
+    SourceDiv13   -> 0x0001
+    SourceDiv9    -> 0x0002
+    SourceDiv6    -> 0x0003
 
 -- | Reference to the WDTCTL register that controls the behavior of the watchdog timer.
 wdtctl = word16' "WDTCTL"
