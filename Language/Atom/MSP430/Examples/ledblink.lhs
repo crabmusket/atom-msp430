@@ -22,13 +22,11 @@ The first thing we need to do is disable (or 'hold') the watchdog timer.
 >         set Password
 >         set Hold
 
-And now, we'll set the `P1DIR` register to let us output values to our LED.
-**Note: this demonstrates using the Atom API to access a register.
-`atom-msp430` doesn't wrap this in MSP430-specific code yet.
-It will soon.**
+Next, we can use a direction register to set one pin in port 1 to output mode.
+Here, 0 is the index of the pin that we want to set to output mode.
 
->     let p1dir = word16' "P1DIR"
->     p1dir <== 1
+>     port1Dir $ do
+>         set (Out 0)
 
 Now for the `loop` function.
 I'll assume you know the basics of [pulse width modulation][PWM] and digital IO.
@@ -39,15 +37,15 @@ I've just chosen an arbitrary constant _p_ for you:
 > p = 10000
 
 And now the loop function itself.
-Again, I'll use Atom's `word16'` function to get a reference to the `P1OUT` register of the G2231.
-Then, we can define two rules, `"led_high"` and `"led_low"` that fire with our desired period and phase.
+We define two rules, `"led_high"` and `"led_low"` that fire with our desired period and phase.
+Each rule uses the `port1Out` function to change the output of the IO port 1.
+Note that here we use the `Pin` constructor instead of `Out` to refer to the 0th pin since we're talking about IO, not setting the direction.
 
 > loop = do
->     let p1out = word16' "P1OUT"
 >     period p $ atom "led_high" $ do
->         p1out <== 1
+>         port1Out $ set (Pin 0)
 >     period p $ phase (quot p 4) $ atom "led_low" $ do
->         p1out <== 0
+>         port1Out $ clear (Pin 0)
 
 And that's it!
 Now we'll take advantage of one of `atom-msp430`'s convenience functions to compile our setup and loop functions.
