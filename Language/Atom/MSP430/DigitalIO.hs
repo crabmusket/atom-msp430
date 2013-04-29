@@ -29,6 +29,14 @@ ioDirOptToWord8 o = case o of
     Outs xs -> sum $ map bit xs
 
 -- | A type of RegisterState where you can set and clear IOValues.
+-- | Sets the direction of pins in an IO port.
+portDir :: Int -> IODirRegister () -> Atom ()
+portDir p s = updateRegister (portDir' p) ((0, 0), ioDirOptToWord8) s
+
+-- | Gets a reference to a numbered output port's direction control register.
+portDir' :: Int -> V Word8
+portDir' p = word8' $ "P" ++ show p ++ "DIR"
+
 type IORegister = RegisterState IOValue Word8
 
 -- | Data constructor representing changes to the actual output state of a DIO pin. This
@@ -43,6 +51,14 @@ ioValToWord8 o = case o of
     Pin x   -> bit x
     Pins xs -> sum $ map bit xs
 
+-- | Sets the output values of the pins in an IO port.
+portOut :: Int -> IORegister () -> Atom ()
+portOut p s = updateRegister (portOut' p) ((0, 0), ioValToWord8) s
+
+-- | Gets a reference to a numbered port's output register.
+portOut' :: Int -> V Word8
+portOut' p = word8' $ "P" ++ show p ++ "OUT"
+
 -- | RegisterState for the pullup/down register enable register.
 type IORENRegister = RegisterState IOResistor Word8
 
@@ -50,6 +66,14 @@ type IORENRegister = RegisterState IOResistor Word8
 data IOResistor
     = Resistor Int    -- ^ Enables a resistor on a single pin.
     | Resistors [Int] -- ^ Enables resistors for a list of pins.
+
+-- | Enables the pullup/down resistors attached to an IO port.
+portRen :: Int -> IORENRegister () -> Atom ()
+portRen p = updateRegister (portRen' p) ((0, 0), ioResToWord8)
+
+-- | Get a reference to a port's resistor enable register.
+portRen' :: Int -> V Word8
+portRen' p = word8' $ "P" ++ show p ++ "REN"
 
 -- | Converts an IOResistor symbol to a word.
 ioResToWord8 :: IOResistor -> Word8
@@ -73,34 +97,6 @@ ioFunToWord8 f = case f of
     Special             -> 0x0002
     SecondaryPeripheral -> 0x0004
 
--- | Sets the direction of pins in an IO port.
-portDir :: Int -> IODirRegister () -> Atom ()
-portDir p s = updateRegister (portDir' p) ((0, 0), ioDirOptToWord8) s
-
--- | Gets a reference to a numbered output port's direction control register.
-portDir' :: Int -> V Word8
-portDir' p = word8' $ "P" ++ show p ++ "DIR"
-
--- | Sets the output values of the pins in an IO port.
-portOut :: Int -> IORegister () -> Atom ()
-portOut p s = updateRegister (portOut' p) ((0, 0), ioValToWord8) s
-
--- | Gets a reference to a numbered port's output register.
-portOut' :: Int -> V Word8
-portOut' p = word8' $ "P" ++ show p ++ "OUT"
-
--- | Gets a reference to a numbered port's input register.
-portIn' :: Int -> E Word8
-portIn' p = value $ word8' $ "P" ++ show p ++ "IN"
-
--- | Enables the pullup/down resistors attached to an IO port.
-portRen :: Int -> IORENRegister () -> Atom ()
-portRen p = updateRegister (portRen' p) ((0, 0), ioResToWord8)
-
--- | Get a reference to a port's resistor enable register.
-portRen' :: Int -> V Word8
-portRen' p = word8' $ "P" ++ show p ++ "REN"
-
 -- | Selects the function of an IO port.
 portFun :: Int -> IOFunctionRegister () -> Atom ()
 portFun p = updateRegister (portFun' p) ((0, 0), ioFunToWord8)
@@ -109,13 +105,18 @@ portFun p = updateRegister (portFun' p) ((0, 0), ioFunToWord8)
 portFun' :: Int -> V Word8
 portFun' p = word8' $ "P" ++ show p ++ "SEL"
 
+-- | Gets a reference to a numbered port's input register.
+portIn' :: Int -> E Word8
+portIn' p = value $ word8' $ "P" ++ show p ++ "IN"
+
+port1In = portIn' 1
 port1Out = portOut 1
 port1Dir = portDir 1
-port1In = portIn' 1
-port1Ren = portRen 1
+port1Resistors = portRen 1
 port1Function = portFun 1
+
+port2In = portIn' 2
 port2Out = portOut 2
 port2Dir = portDir 2
-port2In = portIn' 2
-port2Ren = portRen 2
+port2Resistors = portRen 2
 port2Function = portFun 2
