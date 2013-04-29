@@ -63,7 +63,7 @@ portDir p s = updateRegister (portDir' p) ((0, 0), ioDirOptToWord8) s
 
 -- | Gets a reference to a numbered output port's direction control register.
 portDir' :: Int -> V Word8
-portDir' p = validatePort p $ "P" ++ show p ++ "DIR"
+portDir' p = word8' $ "P" ++ show p ++ "DIR"
 
 -- | Sets the output values of the pins in an IO port.
 portOut :: Int -> IORegister () -> Atom ()
@@ -71,11 +71,11 @@ portOut p s = updateRegister (portOut' p) ((0, 0), ioValToWord8) s
 
 -- | Gets a reference to a numbered port's output register.
 portOut' :: Int -> V Word8
-portOut' p = validatePort p $ "P" ++ show p ++ "OUT"
+portOut' p = word8' $ "P" ++ show p ++ "OUT"
 
 -- | Gets a reference to a numbered port's input register.
 portIn' :: Int -> E Word8
-portIn' p = value $ validatePort p $ "P" ++ show p ++ "IN"
+portIn' p = value $ word8' $ "P" ++ show p ++ "IN"
 
 -- | Enables the pullup/down resistors attached to an IO port.
 portRen :: Int -> IORENRegister () -> Atom ()
@@ -83,11 +83,7 @@ portRen p = updateRegister (portRen' p) ((0, 0), ioResToWord8)
 
 -- | Get a reference to a port's resistor enable register.
 portRen' :: Int -> V Word8
-portRen' p = validatePort p $ "P" ++ show p ++ "REN"
-
--- | Validate a port number so we don't have people selecting the wrong ports.
-validatePort :: Int -> Name -> V Word8
-validatePort p = if p > 0 && p <= 8 then word8' else error $ "There is no port number " ++ show p
+portRen' p = word8' $ "P" ++ show p ++ "REN"
 
 port1Out = portOut 1
 port1Dir = portDir 1
