@@ -57,6 +57,22 @@ ioResToWord8 r = case r of
     Resistor x   -> bit x
     Resistors xs -> sum $ map bit xs
 
+type IOFunctionRegister = RegisterState IOFunction Word8
+
+-- | Enumerates the functions an IO register can perform. The default is IOFunction.
+data IOFunction
+    = IOFunction
+    | PrimaryPeripheral
+    | Special
+    | SecondaryPeripheral
+
+ioFunToWord8 :: IOFunction -> Word8
+ioFunToWord8 f = case f of
+    IOFunction          -> 0x0000
+    PrimaryPeripheral   -> 0x0001
+    Special             -> 0x0002
+    SecondaryPeripheral -> 0x0004
+
 -- | Sets the direction of pins in an IO port.
 portDir :: Int -> IODirRegister () -> Atom ()
 portDir p s = updateRegister (portDir' p) ((0, 0), ioDirOptToWord8) s
@@ -85,11 +101,21 @@ portRen p = updateRegister (portRen' p) ((0, 0), ioResToWord8)
 portRen' :: Int -> V Word8
 portRen' p = word8' $ "P" ++ show p ++ "REN"
 
+-- | Selects the function of an IO port.
+portFun :: Int -> IOFunctionRegister () -> Atom ()
+portFun p = updateRegister (portFun' p) ((0, 0), ioFunToWord8)
+
+-- | Get a reference to the port's function select register.
+portFun' :: Int -> V Word8
+portFun' p = word8' $ "P" ++ show p ++ "SEL"
+
 port1Out = portOut 1
 port1Dir = portDir 1
 port1In = portIn' 1
 port1Ren = portRen 1
+port1Function = portFun 1
 port2Out = portOut 2
 port2Dir = portDir 2
 port2In = portIn' 2
 port2Ren = portRen 2
+port2Function = portFun 2
