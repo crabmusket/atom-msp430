@@ -15,12 +15,6 @@ import Data.Word
 -- | A type of RegisterState where you can set and clear IODirs.
 type IODirRegister = RegisterState IODir Word8
 
--- | A type of RegisterState where you can set and clear IOValues.
-type IORegister = RegisterState IOValue Word8
-
--- | RegisterState for the pullup/down register enable register.
-type IORENRegister = RegisterState IOResistor Word8
-
 -- | These options configure the state of an IO direction register. These registers
 --   determine which pins act as inputs and which as outputs. Pins are input (0) by default;
 --   to reset input after you've set output, simply clear (Out x).
@@ -34,6 +28,11 @@ ioDirOptToWord8 o = case o of
     Out x   -> bit x
     Outs xs -> sum $ map bit xs
 
+-- | A type of RegisterState where you can set and clear IOValues.
+type IORegister = RegisterState IOValue Word8
+
+-- | Data constructor representing changes to the actual output state of a DIO pin. This
+--   is separate from 'Out' to enforce meaningful syntax through the type system.
 data IOValue
     = Pin Int    -- ^ Writes a single pin high.
     | Pins [Int] -- ^ Writes a list of pins high.
@@ -43,6 +42,9 @@ ioValToWord8 :: IOValue -> Word8
 ioValToWord8 o = case o of
     Pin x   -> bit x
     Pins xs -> sum $ map bit xs
+
+-- | RegisterState for the pullup/down register enable register.
+type IORENRegister = RegisterState IOResistor Word8
 
 -- | Enable the pullup/down resistor of a pin.
 data IOResistor
