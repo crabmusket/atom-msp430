@@ -11,7 +11,7 @@ To see the current status and goals, have a look at the [roadmap][].
 
  [Atom]: https://github.com/tomahawkins/atom
  [Haskell]: http://www.haskell.org/
- [ledblink.lhs]: https://github.com/eightyeight/atom-msp430/blob/master/Language/Atom/MSP430/Examples/ledblink.lhs
+ [ledblink.lhs]: Language/Atom/MSP430/Examples/ledblink.lhs
  [roadmap]: https://github.com/eightyeight/atom-msp430/wiki/Roadmap
 
 ## How?
