@@ -1,6 +1,6 @@
 # atom-msp430
 
-Convenience functions for using [Atom][] with the MSP430 microcontroller family.
+An API for interacting with the MSP430 microcontroller family with [Atom][].
 `atom-msp430` wraps common interactions with the 430 in Atom's type-safe and beautiful [Haskell][] DSL.
 There is a Wiring-like setup/loop structure by default, or you can forgo the convenience functions to
 compile whatever code structure fits your needs.
