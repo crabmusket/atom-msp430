@@ -8,24 +8,24 @@ import Language.Atom
 import Control.Monad
 import System.IO
 
--- | Program information. Here we specify the functions that should be used in specific
---   roles in the compiled code.
+-- | Program information. It specifies the functions that should be used in specific
+--   roles in the compiled code, as well as other configuration information.
 data MSP430Compilation = MSP430Compilation {
-    setupFn :: Maybe (Atom ()),
-    setupFnName :: String,
-    loopFn :: Maybe (Atom ()),
-    loopFnName :: String,
-    timerAInterrupt :: Maybe (Atom ()),
-    timerAInterruptName :: String,
-    watchdogInterrupt :: Maybe (Atom ()),
-    watchdogInterruptName :: String,
-    mainFile :: String,
-    emitMainFn :: Bool,
-    headers :: [String]
+    setupFn :: Maybe (Atom ()),           -- ^ Function called once when the MCU starts up.
+    setupFnName :: String,                -- ^ Name of the setup function in the generated code.
+    loopFn :: Maybe (Atom ()),            -- ^ Function called in a busy loop after setup.
+    loopFnName :: String,                 -- ^ Name of the loop function in the generated code.
+    timerAInterrupt :: Maybe (Atom ()),   -- ^ Function to run when a TimerA CCR interrupt happens.
+    timerAInterruptName :: String,        -- ^ Name of the TimerA interrupt function in the generated code.
+    watchdogInterrupt :: Maybe (Atom ()), -- ^ Function to call when the WDT interrupts.
+    watchdogInterruptName :: String,      -- ^ Name of the WDT interrupt function in the generated code.
+    mainFile :: String,                   -- ^ Name of the main file to generate.
+    emitMainFn :: Bool,                   -- ^ Add a main function calling setup and loop?
+    headers :: [String]                   -- ^ A list of header file names to include in the main file.
  }
 
 -- | Default program to construct your own programs from. Contains Nothing and generates a
---   basic main.c.
+--   basic main.c. Use it by overriding the functions it generates, and optionally their names.
 mspProgram = MSP430Compilation {
     setupFn = Nothing,
     setupFnName = "setup",
