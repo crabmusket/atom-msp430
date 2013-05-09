@@ -1,6 +1,6 @@
 module Language.Atom.MSP430.Compile (
     MSP430Compilation (..),
-    mspProgram, wiringProgram,  simpleProgram,
+    mspProgram, wiringProgram, simpleProgram, energiaProgram,
     mspCompile
  ) where
 
