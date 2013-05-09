@@ -3,8 +3,8 @@ module Language.Atom.MSP430.DigitalIO (
     IOValue (..),
     IORegister,
     IODirRegister,
-    port1Out, port1Dir, port1In,
-    port2Out, port2Dir, port2In
+    port1Out, port1Dir, port1In, port1Resistors, port1Function,
+    port2Out, port2Dir, port2In, port2Resistors, port2Function
  ) where
 
 import Language.Atom
@@ -16,8 +16,9 @@ import Data.Word
 type IODirRegister = RegisterState IODir Word8
 
 -- | These options configure the state of an IO direction register. These registers
---   determine which pins act as inputs and which as outputs. Pins are input (0) by default;
---   to reset input after you've set output, simply clear (Out x).
+--   determine which pins act as inputs and which as outputs. Pins are in input mode
+--   (0) by default; to reset a pin to input mode after you've set it to output
+--   mode, simply clear (Out x).
 data IODir
     = Out Int    -- ^ Puts a single pin in output mode.
     | Outs [Int] -- ^ Puts a list of pins in output mode.
@@ -37,6 +38,7 @@ portDir p s = updateRegister (portDir' p) ((0, 0), ioDirOptToWord8) s
 portDir' :: Int -> V Word8
 portDir' p = word8' $ "P" ++ show p ++ "DIR"
 
+-- | A RegisterState for the Digital IO pins' output registers.
 type IORegister = RegisterState IOValue Word8
 
 -- | Data constructor representing changes to the actual output state of a DIO pin. This
@@ -45,7 +47,7 @@ data IOValue
     = Pin Int    -- ^ Writes a single pin high.
     | Pins [Int] -- ^ Writes a list of pins high.
 
--- | Convert an IODir symbol to an actual word value.
+-- | Convert an IOValue symbol to an actual word value.
 ioValToWord8 :: IOValue -> Word8
 ioValToWord8 o = case o of
     Pin x   -> bit x
@@ -81,6 +83,7 @@ ioResToWord8 r = case r of
     Resistor x   -> bit x
     Resistors xs -> sum $ map bit xs
 
+-- | A RegisterState for editing the port function registers.
 type IOFunctionRegister = RegisterState IOFunction Word8
 
 -- | Enumerates the functions an IO register can perform. The default is IOFunction.
@@ -90,6 +93,7 @@ data IOFunction
     | Special
     | SecondaryPeripheral
 
+-- | Converts an IOFunction symbol to a word.
 ioFunToWord8 :: IOFunction -> Word8
 ioFunToWord8 f = case f of
     IOFunction          -> 0x0000
@@ -109,14 +113,14 @@ portFun' p = word8' $ "P" ++ show p ++ "SEL"
 portIn' :: Int -> E Word8
 portIn' p = value $ word8' $ "P" ++ show p ++ "IN"
 
-port1In = portIn' 1
-port1Out = portOut 1
-port1Dir = portDir 1
-port1Resistors = portRen 1
-port1Function = portFun 1
+port1In         = portIn' 1
+port1Out        = portOut 1
+port1Dir        = portDir 1
+port1Resistors  = portRen 1
+port1Function   = portFun 1
 
-port2In = portIn' 2
-port2Out = portOut 2
-port2Dir = portDir 2
-port2Resistors = portRen 2
-port2Function = portFun 2
+port2In         = portIn' 2
+port2Out        = portOut 2
+port2Dir        = portDir 2
+port2Resistors  = portRen 2
+port2Function   = portFun 2
