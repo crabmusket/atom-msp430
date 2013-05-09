@@ -20,6 +20,7 @@ data MSP430Compilation = MSP430Compilation {
     watchdogInterrupt :: Maybe (Atom ()),
     watchdogInterruptName :: String,
     mainFile :: String,
+    emitMainFn :: Bool,
     headers :: [String]
  }
 
@@ -35,6 +36,7 @@ mspProgram = MSP430Compilation {
     watchdogInterrupt = Nothing,
     watchdogInterruptName = "wdtISR",
     mainFile = "main.c",
+    emitMainFn = True,
     headers = []
  }
 
@@ -50,6 +52,13 @@ wiringProgram h s l = mspProgram {
 simpleProgram h s = mspProgram {
     setupFn = Just s,
     headers = ["msp430" ++ h]
+ }
+
+-- | Easy settings for a program with setup and loop, but no main function.
+energiaProgram s l = mspProgram {
+    setupFn = Just s,
+    loopFn = Just l,
+    emitMainFn = False
  }
 
 -- | Compile a program given by the compilation specification. Compiles all functions into library files
@@ -73,15 +82,16 @@ mspCompile c = do
         header' (loopFnName c) (loopFn c)
         header' (timerAInterruptName c) (timerAInterrupt c)
         header' (watchdogInterruptName c) (watchdogInterrupt c)
-        put "\nint main(void) {"
-        case setupFn c of
-            Just f -> put $ "    " ++ setupFnName c ++ "();"
-            Nothing -> return ()
-        case loopFn c of
-            Just f -> put $ "    while(1) " ++ loopFnName c ++ "();"
-            Nothing -> return ()
-        put "    return 0;"
-        put "}\n"
+        when (emitMainFn c) $ do
+            put "\nint main(void) {"
+            case setupFn c of
+                Just f -> put $ "    " ++ setupFnName c ++ "();"
+                Nothing -> return ()
+            case loopFn c of
+                Just f -> put $ "    while(1) " ++ loopFnName c ++ "();"
+                Nothing -> return ()
+            put "    return 0;"
+            put "}\n"
         case timerAInterrupt c of
             Just fn -> do
                 put   "#pragma vector=TIMERA0_VECTOR"
