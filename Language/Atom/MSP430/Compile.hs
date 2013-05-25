@@ -20,8 +20,7 @@ data MSP430Compilation = MSP430Compilation {
     watchdogInterrupt :: Maybe (Atom ()), -- ^ Function to call when the WDT interrupts.
     watchdogInterruptName :: String,      -- ^ Name of the WDT interrupt function in the generated code.
     mainFile :: String,                   -- ^ Name of the main file to generate.
-    emitMainFn :: Bool,                   -- ^ Add a main function calling setup and loop?
-    headers :: [String]                   -- ^ A list of header file names to include in the main file.
+    emitMainFn :: Bool                    -- ^ Add a main function calling setup and loop?
  }
 
 -- | Default program to construct your own programs from. Contains Nothing and generates a
@@ -36,22 +35,19 @@ mspProgram = MSP430Compilation {
     watchdogInterrupt = Nothing,
     watchdogInterruptName = "wdtISR",
     mainFile = "main.c",
-    emitMainFn = True,
-    headers = []
+    emitMainFn = True
  }
 
 -- | Easy settings for a Wiring-style program with setup and loop functions. Expects a device extension
 --   for header files - i.e. running with "g2231" wihh generate files that #include "msp430g2231.h"
-wiringProgram h s l = mspProgram {
+wiringProgram s l = mspProgram {
     setupFn = Just s,
-    loopFn = Just l,
-    headers = ["msp430" ++ h]
+    loopFn = Just l
  }
 
 -- | Easy settings for a program with just a setup function.
-simpleProgram h s = mspProgram {
-    setupFn = Just s,
-    headers = ["msp430" ++ h]
+simpleProgram s = mspProgram {
+    setupFn = Just s
  }
 
 -- | Easy settings for a program with setup and loop, but no main function.
@@ -63,11 +59,11 @@ energiaProgram s l = mspProgram {
 
 -- | Compile a program given by the compilation specification. Compiles all functions into library files
 --   and then generates a main file which calls these functions in the appropriate way.
-mspCompile :: MSP430Compilation -> IO ()
-mspCompile c = do
+mspCompile :: String -> MSP430Compilation -> IO ()
+mspCompile h c = do
     let compile' = maybeCompile defaults {
         cRuleCoverage = False,
-        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ ".h\"") (headers c), "")
+        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ ".h\"") [h], "")
      }
     compile' (setupFnName c) (setupFn c)
     compile' (loopFnName c) (loopFn c)
