@@ -17,6 +17,7 @@ library
                        Language.Atom.MSP430.RegisterState,
                        Language.Atom.MSP430.Watchdog,
                        Language.Atom.MSP430.DigitalIO,
+                       Language.Atom.MSP430.TimerA,
                        Language.Atom.MSP430.Compile
   build-depends:       base ==4.5.*,
                        mtl,
