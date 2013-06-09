@@ -61,9 +61,10 @@ energiaProgram s l = mspProgram {
 --   and then generates a main file which calls these functions in the appropriate way.
 mspCompile :: String -> MSP430Compilation -> IO ()
 mspCompile h c = do
+    let headers = unlines $ map (\h -> "#include \"msp430" ++ h ++ ".h\"") [h]
     let compile' = maybeCompile defaults {
         cRuleCoverage = False,
-        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"msp430" ++ h ++ ".h\"") [h], "")
+        cCode = \_ _ _ -> (headers, "")
      }
     compile' (setupFnName c) (setupFn c)
     compile' (loopFnName c) (loopFn c)
@@ -79,6 +80,7 @@ mspCompile h c = do
         header' (timerAISRName c) (timerAISR c)
         header' (watchdogISRName c) (watchdogISR c)
         when (emitMainFn c) $ do
+            put headers
             put "\nint main(void) {"
             case setupFn c of
                 Just f -> put $ "    " ++ setupFnName c ++ "();"
