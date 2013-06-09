@@ -63,7 +63,7 @@ mspCompile :: String -> MSP430Compilation -> IO ()
 mspCompile h c = do
     let compile' = maybeCompile defaults {
         cRuleCoverage = False,
-        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"" ++ h ++ ".h\"") [h], "")
+        cCode = \_ _ _ -> (unlines $ map (\h -> "#include \"msp430" ++ h ++ ".h\"") [h], "")
      }
     compile' (setupFnName c) (setupFn c)
     compile' (loopFnName c) (loopFn c)
