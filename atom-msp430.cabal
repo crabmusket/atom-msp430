@@ -14,7 +14,6 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:     Language.Atom.MSP430,
-                       Language.Atom.MSP430.RegisterState,
                        Language.Atom.MSP430.Watchdog,
                        Language.Atom.MSP430.DigitalIO,
                        Language.Atom.MSP430.TimerA,

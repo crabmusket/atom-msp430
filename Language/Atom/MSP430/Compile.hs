@@ -15,10 +15,10 @@ data MSP430Compilation = MSP430Compilation {
     setupFnName :: String,                -- ^ Name of the setup function in the generated code.
     loopFn :: Maybe (Atom ()),            -- ^ Function called in a busy loop after setup.
     loopFnName :: String,                 -- ^ Name of the loop function in the generated code.
-    timerAInterrupt :: Maybe (Atom ()),   -- ^ Function to run when a TimerA CCR interrupt happens.
-    timerAInterruptName :: String,        -- ^ Name of the TimerA interrupt function in the generated code.
-    watchdogInterrupt :: Maybe (Atom ()), -- ^ Function to call when the WDT interrupts.
-    watchdogInterruptName :: String,      -- ^ Name of the WDT interrupt function in the generated code.
+    timerAISR :: Maybe (Atom ()),         -- ^ Function to run when a TimerA CCR interrupt happens.
+    timerAISRName :: String,              -- ^ Name of the TimerA interrupt function in the generated code.
+    watchdogISR :: Maybe (Atom ()),       -- ^ Function to call when the WDT interrupts.
+    watchdogISRName :: String,            -- ^ Name of the WDT interrupt function in the generated code.
     mainFile :: String,                   -- ^ Name of the main file to generate.
     emitMainFn :: Bool                    -- ^ Add a main function calling setup and loop?
  }
@@ -30,10 +30,10 @@ mspProgram = MSP430Compilation {
     setupFnName = "setup",
     loopFn = Nothing,
     loopFnName = "loop",
-    timerAInterrupt = Nothing,
-    timerAInterruptName = "timerAISR",
-    watchdogInterrupt = Nothing,
-    watchdogInterruptName = "wdtISR",
+    timerAISR = Nothing,
+    timerAISRName = "timerAISR",
+    watchdogISR = Nothing,
+    watchdogISRName = "wdtISR",
     mainFile = "main.c",
     emitMainFn = True
  }
@@ -67,8 +67,8 @@ mspCompile h c = do
      }
     compile' (setupFnName c) (setupFn c)
     compile' (loopFnName c) (loopFn c)
-    compile' (timerAInterruptName c) (timerAInterrupt c)
-    compile' (watchdogInterruptName c) (watchdogInterrupt c)
+    compile' (timerAISRName c) (timerAISR c)
+    compile' (watchdogISRName c) (watchdogISR c)
     putStrLn $ "Generating " ++ mainFile c ++ "..."
     hFlush stdout
     withFile (mainFile c) WriteMode $ \h -> do
@@ -76,8 +76,8 @@ mspCompile h c = do
         let header' = maybeHeader h
         header' (setupFnName c) (setupFn c)
         header' (loopFnName c) (loopFn c)
-        header' (timerAInterruptName c) (timerAInterrupt c)
-        header' (watchdogInterruptName c) (watchdogInterrupt c)
+        header' (timerAISRName c) (timerAISR c)
+        header' (watchdogISRName c) (watchdogISR c)
         when (emitMainFn c) $ do
             put "\nint main(void) {"
             case setupFn c of
@@ -88,18 +88,18 @@ mspCompile h c = do
                 Nothing -> return ()
             put "    return 0;"
             put "}\n"
-        case timerAInterrupt c of
+        case timerAISR c of
             Just fn -> do
                 put   "#pragma vector=TIMERA0_VECTOR"
                 put   "__interrupt void __timerA_isr(void) {"
-                put $ "    " ++ timerAInterruptName c ++ "();"
+                put $ "    " ++ timerAISRName c ++ "();"
                 put   "}\n"
             Nothing -> return ()
-        case watchdogInterrupt c of
+        case watchdogISR c of
             Just fn -> do
                 put   "#pragma vector=WDT_VECTOR"
                 put   "__interrupt void __wdt_isr(void) {"
-                put $ "    " ++ watchdogInterruptName c ++ "();"
+                put $ "    " ++ watchdogISRName c ++ "();"
                 put   "}\n"
             Nothing -> return ()
     return ()
