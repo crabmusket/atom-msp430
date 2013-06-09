@@ -1,5 +1,5 @@
 name:                atom-msp430
-version:             0.3.0
+version:             0.4.0
 synopsis:            Convenience functions for using Atom with the MSP430 microcontroller family.
 -- description:         
 homepage:            https://github.com/eightyeight/atom-msp430
@@ -14,9 +14,9 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:     Language.Atom.MSP430,
-                       Language.Atom.MSP430.RegisterState,
                        Language.Atom.MSP430.Watchdog,
                        Language.Atom.MSP430.DigitalIO,
+                       Language.Atom.MSP430.TimerA,
                        Language.Atom.MSP430.Compile
   build-depends:       base ==4.5.*,
                        mtl,
