@@ -21,6 +21,5 @@ taSourceDiv1       = 0x0000 :: Word16
 taCCRInterrupt = 0x0010 :: Word16
 
 timerAControl = word16' "TACTL"
-timerACapComp0 = word16' "TACCR0"
-timerACapCompCtl0 = word16' "TACCTL0"
-timerAInterrupt = word16' "TAIV"
+timerACCR0 = word16' "TACCR0"
+timerACCC0 = word16' "TACCTL0"
