@@ -2,7 +2,7 @@ Interrupt
 ---------
 
 _This is a [literate Haskell][LHS] file, which means GHC can read it as valid Haskell code.
-Try `runhaskell 7-segment.lhs` and see!_
+Try `runhaskell interrupt.lhs` and see!_
 
 This program is an example of using Timer A interrupts, in this case just to blink the red LED.
 You can obviously add your own ISR code that does more interesting things!
@@ -52,7 +52,7 @@ Since there is only one command in our ISR, we could have skipped the `do` notat
 which is used in Haskell to glue multiple commands together.
 That would make our ISR look like:
 
-< isr = incr port1Out
+    isr = incr port1Out
 
 Finally, we'll compile the program using the `mspProgram` defaults with some overridden values instead of the `wiringProgram` convenience function.
 Here we provide the compiler with the functions we use for setup, and the Timer A ISR.
