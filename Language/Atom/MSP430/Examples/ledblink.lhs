@@ -18,15 +18,13 @@ We'll define `setup` first, because that's logical.
 The first thing we need to do is disable (or 'hold') the watchdog timer.
 
 > setup = do
->     watchdog $ do
->         set Password
->         set Hold
+>     watchdog <== Const (wdtPassword .|. wdtHold)
 
-Next, we can use a direction register to set one pin in port 1 to output mode.
-Here, 0 is the index of the pin that we want to set to output mode.
+Now we will use the P1DIR register to determine which pins are in output mode.
+Setting a direction bit to 1 corresponds to putting that pin in output mode.
+To prevent floating inputs affecting the MCU's operation, we'll set all the pins to output mode:
 
->     port1Dir $ do
->         set (Out 0)
+>     port1Dir <== complement 0
 
 Now for the `loop` function.
 I'll assume you know the basics of [pulse width modulation][PWM] and digital IO.
@@ -43,9 +41,9 @@ Note that here we use the `Pin` constructor instead of `Out` to refer to the 0th
 
 > loop = do
 >     period p $ atom "led_high" $ do
->         port1Out $ set (Pin 0)
+>         port1Out <== 0x0001
 >     period p $ phase (quot p 4) $ atom "led_low" $ do
->         port1Out $ clear (Pin 0)
+>         port1Out <== 0x0000
 
 And that's it!
 Now we'll take advantage of one of `atom-msp430`'s convenience functions to compile our setup and loop functions.
