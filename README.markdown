@@ -2,9 +2,6 @@
 
 An API for interacting with the MSP430 microcontroller family with [Atom][].
 `atom-msp430` wraps common interactions with the 430 in Atom's type-safe and beautiful [Haskell][] DSL.
-There is a Wiring-like setup/loop structure by default, or you can forgo the convenience functions to
-compile whatever code structure fits your needs.
-
 For a quick demonstration, have a read of [ledblink.lhs][].
 More examples will come soon!
 To see the current status and goals, have a look at the [roadmap][].
@@ -16,17 +13,23 @@ To see the current status and goals, have a look at the [roadmap][].
 
 ## How?
 
- 1. Download and install the [Haskell Platform][].
- 2. Get Atom using Cabal-install: `cabal install atom`
- 3. Clone this repository, then build and install using Cabal:
+Make sure you have the [Haskell Platform][] installed.
+
+ [Haskell Platform]: http://www.haskell.org/platform
+
+### Using Cabal
+
+```
+cabal install atom-msp430
+```
+
+### Using git
 
 ```
 git clone git@github.com:eightyeight/atom-msp430
 cd atom-msp430
 cabal install
 ```
-
- [Haskell Platform]: http://www.haskell.org/platform
 
 ## Why?
 

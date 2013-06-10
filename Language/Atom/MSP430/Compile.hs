@@ -19,10 +19,10 @@ data MSP430Compilation = MSP430Compilation {
     timerAISRName :: String,              -- ^ Name of the TimerA interrupt function in the generated code.
     watchdogISR :: Maybe (Atom ()),       -- ^ Function to call when the WDT interrupts.
     watchdogISRName :: String,            -- ^ Name of the WDT interrupt function in the generated code.
-    port1ISR :: Maybe (Atom ()),          -- ^ 
-    port1ISRName :: String,               -- ^ 
-    port2ISR :: Maybe (Atom ()),          -- ^ 
-    port2ISRName :: String,               -- ^ 
+    port1ISR :: Maybe (Atom ()),          -- ^ Function to call when there is a PORT1 interrupt.
+    port1ISRName :: String,               -- ^ Name of the PORT1 interrupt function.
+    port2ISR :: Maybe (Atom ()),          -- ^ Function to call when there is a PORT2 interrupt.
+    port2ISRName :: String,               -- ^ Name of the PORT2 interrupt function.
     mainFile :: String,                   -- ^ Name of the main file to generate.
     emitMainFn :: Bool                    -- ^ Add a main function calling setup and loop?
  }
