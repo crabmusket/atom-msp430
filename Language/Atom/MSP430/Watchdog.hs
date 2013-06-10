@@ -15,4 +15,7 @@ wdtSourceDiv13   = 0x0001 :: Word16
 wdtSourceDiv9    = 0x0002 :: Word16
 wdtSourceDiv6    = 0x0003 :: Word16
 
+wdtInterruptEnable    = 0x01 :: Word8
+wdtNMIInterruptEnable = 0x10 :: Word8
+
 watchdog = word16' "WDTCTL"
