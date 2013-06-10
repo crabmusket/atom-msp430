@@ -8,11 +8,13 @@ Try `runhaskell interrupt.lhs` and see!_
 > import Language.Atom.MSP430
 > 
 > setup = do
->     watchdog <== Const (wdtPassword .|. wdtIntervalMode)
->     port1Dir <== Const (complement 0)
->     port1Out <== Const 0x0001
->     interruptEnable <== Const wdtInterruptEnable
->     call "__enable_interrupt"
+>     atom "settings" $ do
+>         watchdog <== Const (wdtPassword .|. wdtIntervalMode)
+>         port1Dir <== Const (complement 0)
+>         port1Out <== Const 0x0001
+>         interruptEnable <== Const wdtInterruptEnable
+>         call "__enable_interrupt"
+>     atom "poweroff" $ action (\_ -> "_BIS_SR(LPM0_bits|GIE)") []
 > 
 > isr = do
 >     incr port1Out

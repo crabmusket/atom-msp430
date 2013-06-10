@@ -16,30 +16,33 @@ It's good practise to set unused pins to output mode, to prevent 'floating' inpu
 so we'll do that as well, and then set pin 0's output high.
 
 > setup = do
->     watchdog <== Const (wdtPassword .|. wdtHold)
->     port1Dir <== Const (complement 0)
->     port1Out <== Const 0x0001
+>     atom "settings" $ do
+>         watchdog <== Const (wdtPassword .|. wdtHold)
+>         port1Dir <== Const (complement 0)
+>         port1Out <== Const 0x0001
 
 Now we can configure the Timer A module.
 The timer has several counting modes - we will use 'up' mode, where the timer starts at 0,
 counts up to whatever value is in `TACCR0`, then resets to 0.
 We also need to 'source' the timer ticks from the `ACLK`, one of the MSP430's internal oscillators (clocks).
 
->     timerAControl <== Const (taUpMode .|. taSourceACLK)
+>         timerAControl <== Const (taUpMode .|. taSourceACLK)
 
 Now, we need to configure the timer to interrupt when it reaches the value in the capture/compare register.
 This is enabled in the `TACCNTL` registers:
 
->     timerACCC0 <== Const taCCRInterrupt
+>         timerACCC0 <== Const taCCRInterrupt
 
 Then we need to add some suitable value for the timer to count up to.
 4096 gives a nice delay, so we'll put it in the capture/compare register:
 
->     timerACCR0 <== Const 4096
+>         timerACCR0 <== Const 4096
 
 And, finally, we need to enable the global interrupt flag so the Timer A interrupts are received at all.
+Then we can send the MCU to sleep!
 
->     call "__enable_interrupt"
+>         call "__enable_interrupt"
+>     atom "poweroff" $ action (\_ -> "_BIS_SR(LPM0_bits|GIE)") []
 
 When the Timer A interrupt happens, we'll increment the value in port 1's output register.
 This will have the effect of toggling the red LED (since the red LED is on when `port1Out` is odd).
