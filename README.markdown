@@ -23,9 +23,7 @@ To see the current status and goals, have a look at the [roadmap][].
 ```
 git clone git@github.com:eightyeight/atom-msp430
 cd atom-msp430
-cabal configure
-cabal build
-cabal install --user
+cabal install
 ```
 
  [Haskell Platform]: http://www.haskell.org/platform
