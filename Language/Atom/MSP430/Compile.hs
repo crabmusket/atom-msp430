@@ -19,6 +19,10 @@ data MSP430Compilation = MSP430Compilation {
     timerAISRName :: String,              -- ^ Name of the TimerA interrupt function in the generated code.
     watchdogISR :: Maybe (Atom ()),       -- ^ Function to call when the WDT interrupts.
     watchdogISRName :: String,            -- ^ Name of the WDT interrupt function in the generated code.
+    port1ISR :: Maybe (Atom ()),          -- ^ 
+    port1ISRName :: String,               -- ^ 
+    port2ISR :: Maybe (Atom ()),          -- ^ 
+    port2ISRName :: String,               -- ^ 
     mainFile :: String,                   -- ^ Name of the main file to generate.
     emitMainFn :: Bool                    -- ^ Add a main function calling setup and loop?
  }
@@ -34,6 +38,10 @@ mspProgram = MSP430Compilation {
     timerAISRName = "timerAISR",
     watchdogISR = Nothing,
     watchdogISRName = "wdtISR",
+    port1ISR = Nothing,
+    port1ISRName = "p1ISR",
+    port2ISR = Nothing,
+    port2ISRName = "p2ISR",
     mainFile = "main.c",
     emitMainFn = True
  }
@@ -64,21 +72,27 @@ mspCompile h c = do
     let headers = unlines $ map (\h -> "#include \"msp430" ++ h ++ ".h\"") [h]
     let compile' = maybeCompile defaults {
         cRuleCoverage = False,
+        cAssert = False,
         cCode = \_ _ _ -> (headers, "")
      }
     compile' (setupFnName c) (setupFn c)
     compile' (loopFnName c) (loopFn c)
     compile' (timerAISRName c) (timerAISR c)
     compile' (watchdogISRName c) (watchdogISR c)
+    compile' (port1ISRName c) (port1ISR c)
+    compile' (port2ISRName c) (port2ISR c)
     putStrLn $ "Generating " ++ mainFile c ++ "..."
     hFlush stdout
     withFile (mainFile c) WriteMode $ \h -> do
         let put = hPutStrLn h
         let header' = maybeHeader h
+        let interrupt' = maybeInterrupt h
         header' (setupFnName c) (setupFn c)
         header' (loopFnName c) (loopFn c)
         header' (timerAISRName c) (timerAISR c)
         header' (watchdogISRName c) (watchdogISR c)
+        header' (port1ISRName c) (port1ISR c)
+        header' (port2ISRName c) (port2ISR c)
         when (emitMainFn c) $ do
             put headers
             put "\nint main(void) {"
@@ -90,20 +104,10 @@ mspCompile h c = do
                 Nothing -> return ()
             put "    return 0;"
             put "}\n"
-        case timerAISR c of
-            Just fn -> do
-                put   "#pragma vector=TIMERA0_VECTOR"
-                put   "__interrupt void __timerA_isr(void) {"
-                put $ "    " ++ timerAISRName c ++ "();"
-                put   "}\n"
-            Nothing -> return ()
-        case watchdogISR c of
-            Just fn -> do
-                put   "#pragma vector=WDT_VECTOR"
-                put   "__interrupt void __wdt_isr(void) {"
-                put $ "    " ++ watchdogISRName c ++ "();"
-                put   "}\n"
-            Nothing -> return ()
+        interrupt' (watchdogISR c) (watchdogISRName c) "WDT_VECTOR"
+        interrupt' (timerAISR c)   (timerAISRName c)   "TIMERA0_VECTOR"
+        interrupt' (port1ISR c)    (port1ISRName c)    "PORT1_VECTOR"
+        interrupt' (port2ISR c)    (port2ISRName c)    "PORT2_VECTOR"
     return ()
 
 maybeCompile s n f = case f of
@@ -116,5 +120,14 @@ maybeCompile s n f = case f of
 
 maybeHeader h header f = case f of
     Just _ -> hPutStrLn h $ "#include \"" ++ header ++ ".h\""
+    Nothing -> return ()
+
+maybeInterrupt h a n v = case a of
+    Just _ -> do
+        let put = hPutStrLn h
+        put $ "#pragma vector=" ++ v
+        put $ "__interrupt void __" ++ n ++ "(void) {"
+        put $ "    " ++ n ++ "();"
+        put   "}\n"
     Nothing -> return ()
 
