@@ -29,6 +29,7 @@ data MSP430Compilation = MSP430Compilation {
 
 -- | Default program to construct your own programs from. Contains Nothing and generates a
 --   basic main.c. Use it by overriding the functions it generates, and optionally their names.
+mspProgram :: MSP430Compilation
 mspProgram = MSP430Compilation {
     setupFn = Nothing,
     setupFnName = "setup",
@@ -48,17 +49,20 @@ mspProgram = MSP430Compilation {
 
 -- | Easy settings for a Wiring-style program with setup and loop functions. Expects a device extension
 --   for header files - i.e. running with "g2231" wihh generate files that #include "msp430g2231.h"
+wiringProgram :: Atom () -> Atom () -> MSP430Compilation
 wiringProgram s l = mspProgram {
     setupFn = Just s,
     loopFn = Just l
  }
 
 -- | Easy settings for a program with just a setup function.
+simpleProgram :: Atom () -> MSP430Compilation
 simpleProgram s = mspProgram {
     setupFn = Just s
  }
 
 -- | Easy settings for a program with setup and loop, but no main function.
+energiaProgram :: Atom () -> Atom () -> MSP430Compilation
 energiaProgram s l = mspProgram {
     setupFn = Just s,
     loopFn = Just l,
