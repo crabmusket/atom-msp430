@@ -1,5 +1,5 @@
 name:                atom-msp430
-version:             0.5.1
+version:             0.5.2
 synopsis:            Convenience functions for using Atom with the MSP430 microcontroller family.
 -- description:         
 homepage:            https://github.com/eightyeight/atom-msp430
@@ -19,6 +19,6 @@ library
                        Language.Atom.MSP430.TimerA,
                        Language.Atom.MSP430.Interrupts,
                        Language.Atom.MSP430.Compile
-  build-depends:       base ==4.5.*,
+  build-depends:       base >= 4.0,
                        mtl,
                        atom >= 1.0.12
