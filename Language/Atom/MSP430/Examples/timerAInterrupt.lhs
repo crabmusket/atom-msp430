@@ -24,9 +24,9 @@ so we'll do that as well, and then set pin 0's output high.
 Now we can configure the Timer A module.
 The timer has several counting modes - we will use 'up' mode, where the timer starts at 0,
 counts up to whatever value is in `TACCR0`, then resets to 0.
-We also need to 'source' the timer ticks from the `ACLK`, one of the MSP430's internal oscillators (clocks).
+We also need to 'source' the timer ticks from the `SMCLK`, one of the MSP430's internal oscillators (clocks).
 
->         timerAControl <== Const (taUpMode .|. taSourceACLK)
+>         timerAControl <== Const (taUpMode .|. taSourceSMCLK)
 
 Now, we need to configure the timer to interrupt when it reaches the value in the capture/compare register.
 This is enabled in the `TACCNTL` registers:
