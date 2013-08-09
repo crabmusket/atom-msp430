@@ -18,8 +18,14 @@ taSourceDiv2       = 0x0040 :: Word16 -- ^ Divide timer input source by 2.
 taSourceDiv4       = 0x0080 :: Word16 -- ^ Divide timer input source by 4.
 taSourceDiv8       = 0x00C0 :: Word16 -- ^ Divide timer input source by 8.
 
+taCaptureRising = 0x4000 :: Word16
+taCaptureFalling = 0x8000 :: Word16
+taCaptureBoth = 0xC000 :: Word16
+taSyncCapture = 0x0800 :: Word16
 taCCRInterrupt = 0x0010 :: Word16 -- ^ Interrupt on a Timer A CCR.
 
 timerAControl = word16' "TACTL" -- ^ Timer A control register.
 timerACCR0 = word16' "TACCR0"   -- ^ Timer A capture/compare register 0.
 timerACCC0 = word16' "TACCTL0"  -- ^ Timer A capture/compare control register 0.
+timerACCR1 = word16' "TACCR1"   -- ^ Timer A capture/compare register 1.
+timerACCC1 = word16' "TACCTL1"  -- ^ Timer A capture/compare control register 1.
