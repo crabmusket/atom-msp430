@@ -1,3 +1,5 @@
+> {-# LANGUAGE QuasiQuotes #-}
+
 Interrupt
 ---------
 
@@ -9,6 +11,7 @@ You can obviously add your own ISR code that does more interesting things!
 
 > module Main where
 > import Language.Atom.MSP430
+> import Language.Atom.MSP430.Inline
 
 In our setup function, the first thing we will do, as always, is disable the watchdog timer.
 Then we'll set the direction of IO port 1's pins.
@@ -41,8 +44,8 @@ Then we need to add some suitable value for the timer to count up to.
 And, finally, we need to enable the global interrupt flag so the Timer A interrupts are received at all.
 Then we can send the MCU to sleep!
 
->         call "__enable_interrupt"
->     atom "poweroff" $ action (\_ -> "_BIS_SR(LPM0_bits|GIE)") []
+>         [c| __enable_interrupt(); |]
+>     atom "poweroff" $ [c| _BIS_SR(LPM0_bits|GIE); |]
 
 When the Timer A interrupt happens, we'll increment the value in port 1's output register.
 This will have the effect of toggling the red LED (since the red LED is on when `port1Out` is odd).
