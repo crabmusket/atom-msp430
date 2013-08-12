@@ -1,6 +1,6 @@
 module Language.Atom.MSP430.Compile (
     MSP430Compilation (..),
-    mspProgram, wiringProgram, simpleProgram, energiaProgram,
+    program,
     mspCompile
  ) where
 
@@ -8,65 +8,29 @@ import Language.Atom
 import Control.Monad
 import System.IO
 
+nullAtom :: Atom ()
+nullAtom = return ()
+
 -- | Program information. It specifies the functions that should be used in specific
 --   roles in the compiled code, as well as other configuration information.
 data MSP430Compilation = MSP430Compilation {
-    setupFn :: Maybe (Atom ()),           -- ^ Function called once when the MCU starts up.
-    setupFnName :: String,                -- ^ Name of the setup function in the generated code.
-    loopFn :: Maybe (Atom ()),            -- ^ Function called in a busy loop after setup.
-    loopFnName :: String,                 -- ^ Name of the loop function in the generated code.
-    timerAISR :: Maybe (Atom ()),         -- ^ Function to run when a TimerA CCR interrupt happens.
-    timerAISRName :: String,              -- ^ Name of the TimerA interrupt function in the generated code.
-    watchdogISR :: Maybe (Atom ()),       -- ^ Function to call when the WDT interrupts.
-    watchdogISRName :: String,            -- ^ Name of the WDT interrupt function in the generated code.
-    port1ISR :: Maybe (Atom ()),          -- ^ Function to call when there is a PORT1 interrupt.
-    port1ISRName :: String,               -- ^ Name of the PORT1 interrupt function.
-    port2ISR :: Maybe (Atom ()),          -- ^ Function to call when there is a PORT2 interrupt.
-    port2ISRName :: String,               -- ^ Name of the PORT2 interrupt function.
-    mainFile :: String,                   -- ^ Name of the main file to generate.
-    emitMainFn :: Bool                    -- ^ Add a main function calling setup and loop?
+    setup :: Atom (),       -- ^ Function called once when the MCU starts up.
+    loop :: Atom (),        -- ^ Function called in a busy loop after setup.
+    timerAISR :: Atom (),   -- ^ Function to run when a TimerA CCR interrupt happens.
+    watchdogISR :: Atom (), -- ^ Function to call when the WDT interrupts.
+    port1ISR :: Atom (),    -- ^ Function to call when there is a PORT1 interrupt.
+    port2ISR :: Atom ()    -- ^ Function to call when there is a PORT2 interrupt.
  }
 
--- | Default program to construct your own programs from. Contains Nothing and generates a
---   basic main.c. Use it by overriding the functions it generates, and optionally their names.
-mspProgram :: MSP430Compilation
-mspProgram = MSP430Compilation {
-    setupFn = Nothing,
-    setupFnName = "setup",
-    loopFn = Nothing,
-    loopFnName = "loop",
-    timerAISR = Nothing,
-    timerAISRName = "timerAISR",
-    watchdogISR = Nothing,
-    watchdogISRName = "wdtISR",
-    port1ISR = Nothing,
-    port1ISRName = "p1ISR",
-    port2ISR = Nothing,
-    port2ISRName = "p2ISR",
-    mainFile = "main.c",
-    emitMainFn = True
- }
-
--- | Easy settings for a Wiring-style program with setup and loop functions. Expects a device extension
---   for header files - i.e. running with "g2231" wihh generate files that #include "msp430g2231.h"
-wiringProgram :: Atom () -> Atom () -> MSP430Compilation
-wiringProgram s l = mspProgram {
-    setupFn = Just s,
-    loopFn = Just l
- }
-
--- | Easy settings for a program with just a setup function.
-simpleProgram :: Atom () -> MSP430Compilation
-simpleProgram s = mspProgram {
-    setupFn = Just s
- }
-
--- | Easy settings for a program with setup and loop, but no main function.
-energiaProgram :: Atom () -> Atom () -> MSP430Compilation
-energiaProgram s l = mspProgram {
-    setupFn = Just s,
-    loopFn = Just l,
-    emitMainFn = False
+-- | Default program to construct your own programs from. Contains all null atoms.
+program :: MSP430Compilation
+program = MSP430Compilation {
+    setup = nullAtom,
+    loop = nullAtom,
+    timerAISR = nullAtom,
+    watchdogISR = nullAtom,
+    port1ISR = nullAtom,
+    port2ISR = nullAtom
  }
 
 -- | Compile a program given by the compilation specification. Compiles all functions into library files
@@ -79,59 +43,58 @@ mspCompile h c = do
         cAssert = False,
         cCode = \_ _ _ -> (headers, "")
      }
-    compile' (setupFnName c) (setupFn c)
-    compile' (loopFnName c) (loopFn c)
-    compile' (timerAISRName c) (timerAISR c)
-    compile' (watchdogISRName c) (watchdogISR c)
-    compile' (port1ISRName c) (port1ISR c)
-    compile' (port2ISRName c) (port2ISR c)
-    putStrLn $ "Generating " ++ mainFile c ++ "..."
+    compile' "setup" (setup c)
+    compile' "loop" (loop c)
+    compile' "timerAISR" (timerAISR c)
+    compile' "watchdogISR" (watchdogISR c)
+    compile' "port1ISR" (port1ISR c)
+    compile' "port2ISR" (port2ISR c)
+    putStrLn $ "Generating main.c ..."
     hFlush stdout
-    withFile (mainFile c) WriteMode $ \h -> do
+    withFile ("main.c") WriteMode $ \h -> do
         let put = hPutStrLn h
         let header' = maybeHeader h
         let interrupt' = maybeInterrupt h
-        header' (setupFnName c) (setupFn c)
-        header' (loopFnName c) (loopFn c)
-        header' (timerAISRName c) (timerAISR c)
-        header' (watchdogISRName c) (watchdogISR c)
-        header' (port1ISRName c) (port1ISR c)
-        header' (port2ISRName c) (port2ISR c)
-        when (emitMainFn c) $ do
-            put headers
-            put "\nint main(void) {"
-            case setupFn c of
-                Just f -> put $ "    " ++ setupFnName c ++ "();"
-                Nothing -> return ()
-            case loopFn c of
-                Just f -> put $ "    while(1) " ++ loopFnName c ++ "();"
-                Nothing -> return ()
-            put "    return 0;"
-            put "}\n"
-        interrupt' (watchdogISR c) (watchdogISRName c) "WDT_VECTOR"
-        interrupt' (timerAISR c)   (timerAISRName c)   "TIMERA0_VECTOR"
-        interrupt' (port1ISR c)    (port1ISRName c)    "PORT1_VECTOR"
-        interrupt' (port2ISR c)    (port2ISRName c)    "PORT2_VECTOR"
+        header' "setup" (setup c)
+        header' "loop" (loop c)
+        header' "timerAISR" (timerAISR c)
+        header' "watchdogISR" (watchdogISR c)
+        header' "port1ISR" (port1ISR c)
+        header' "port2ISR" (port2ISR c)
+        put headers
+        put "\nint main(void) {"
+        case setup c of
+            nullAtom -> return ()
+            otherwise -> put $ "    setup();"
+        case loop c of
+            nullAtom -> return ()
+            otherwise -> put $ "    while(1) loop();"
+        put "    return 0;"
+        put "}\n"
+        interrupt' "timerAISR"   (timerAISR c)   "TIMERA0_VECTOR"
+        interrupt' "watchdogISR" (watchdogISR c) "WDT_VECTOR"
+        interrupt' "port1ISR"    (port1ISR c)    "PORT1_VECTOR"
+        interrupt' "port2ISR"    (port2ISR c)    "PORT2_VECTOR"
     return ()
 
 maybeCompile s n f = case f of
-    Nothing -> return ()
-    Just fn -> do
+    nullAtom -> return ()
+    otherwise -> do
         putStrLn $ "Compiling " ++ n ++ "..."
         hFlush stdout
-        compile n s fn
+        compile n s f
         return ()
 
 maybeHeader h header f = case f of
-    Just _ -> hPutStrLn h $ "#include \"" ++ header ++ ".h\""
-    Nothing -> return ()
+    nullAtom -> return ()
+    otherwise -> hPutStrLn h $ "#include \"" ++ header ++ ".h\""
 
-maybeInterrupt h a n v = case a of
-    Just _ -> do
+maybeInterrupt h n f v = case f of
+    nullAtom -> return ()
+    otherwise -> do
         let put = hPutStrLn h
         put $ "#pragma vector=" ++ v
         put $ "__interrupt void __" ++ n ++ "(void) {"
         put $ "    " ++ n ++ "();"
         put   "}\n"
-    Nothing -> return ()
 
