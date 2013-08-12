@@ -1,5 +1,3 @@
-> {-# LANGUAGE QuasiQuotes #-}
-
 Interrupt
 ---------
 
@@ -9,8 +7,19 @@ Try `runhaskell interrupt.lhs` and see!_
 This program is an example of using Timer A interrupts, in this case just to blink the red LED.
 You can obviously add your own ISR code that does more interesting things!
 
+In this example, we'll make use of some inline C instructions.
+This requires an extension of Haskell called QuasiQuotes, which means inserting this pragma at the top of the file:
+
+> {-# LANGUAGE QuasiQuotes #-}
+
+Now back to our regularly scheduled top matter - declaring this as the Main mdoule,
+and importing the Atom MSP library.
+
 > module Main where
 > import Language.Atom.MSP430
+
+And we'll add one more import - an optional module that enables inline C and assembly.
+
 > import Language.Atom.MSP430.Inline
 
 In our setup function, the first thing we will do, as always, is disable the watchdog timer.
@@ -47,9 +56,16 @@ Then we can send the MCU to sleep!
 >         [c| __enable_interrupt(); |]
 >     atom "poweroff" $ [c| _BIS_SR(LPM0_bits|GIE); |]
 
+Note that we use inline C to do this (since Atom doesn't support calling arbitrary C functions with arguments).
+The C code is enclosed in QuasiQuotes: Oxford brackets (`[| ... |]`) with the name of the quoter we will use (`c`).
+To add inline assembly, we could have used the `asm` quoter:
+
+    [asm| bis.w #LPM0+GIE, SR |]
+
 When the Timer A interrupt happens, we'll increment the value in port 1's output register.
 This will have the effect of toggling the red LED (since the red LED is on when `port1Out` is odd).
 Eventually the gren LED will turn on, but not for a long time!
+We'll call the short function to do this `isr`:
 
 > isr = do
 >     incr port1Out
