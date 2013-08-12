@@ -19,7 +19,7 @@ so we'll do that as well, and then set pin 0's output high.
 >     atom "settings" $ do
 >         watchdog <== Const (wdtPassword .|. wdtHold)
 >         port1Dir <== Const (complement 0)
->         port1Out <== Const 0x0001
+>         port1Out <== Const 0x01
 
 Now we can configure the Timer A module.
 The timer has several counting modes - we will use 'up' mode, where the timer starts at 0,
